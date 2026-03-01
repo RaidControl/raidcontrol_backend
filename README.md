@@ -339,6 +339,105 @@ Formato:
 
 ---
 
+## Continuous Deployment
+
+El proyecto usa un pipeline de CD completo sobre Kubernetes (DigitalOcean) con ArgoCD como motor de GitOps.
+
+### Arquitectura
+
+```
+Push a branch ──► GitHub Actions ──► Build Docker image ──► Push a Docker Hub
+                                                               │
+                                            ArgoCD detecta nuevo tag
+                                                               │
+                                            Sync Helm chart ──► Deploy a K8s
+```
+
+### Ambientes
+
+| Ambiente | Branch | ArgoCD App | Namespace | Dominio |
+|----------|--------|------------|-----------|---------|
+| Dev | `develop` | `djv-raidcontrol-backend-dev` | `djv-raidcontrol-backend-dev` | `api.dev.vueltaalpartido.com.ar` |
+| Prod | `main` | `djv-raidcontrol-backend-prod` | `djv-raidcontrol-backend-prod` | `api.vueltaalpartido.com.ar` |
+
+### GitHub Actions
+
+Dos workflows en `.github/workflows/`:
+
+- **deploy-dev.yml** — se ejecuta en push a `develop`
+- **deploy-prod.yml** — se ejecuta en push a `main`
+
+Cada workflow:
+1. Resuelve la version del tag (`<version>-<short_sha>`)
+2. Buildea y pushea la imagen Docker a Docker Hub
+3. Llama a ArgoCD para sincronizar la app con la nueva version
+
+Las actions reutilizables vienen del repo [`moreirodamian/github-actions`](https://github.com/moreirodamian/github-actions):
+- [`docker-build`](https://github.com/moreirodamian/github-actions/tree/main/docker-build) — buildea y pushea la imagen a Docker Hub
+- [`argocd-deploy`](https://github.com/moreirodamian/github-actions/tree/main/argocd-deploy) — actualiza el tag en ArgoCD y sincroniza la app
+
+### Helm Chart
+
+El chart esta en `configuration/devops/helm/api/` y usa como dependencia [`generic-app`](https://github.com/moreirodamian/helm-charts/tree/main/charts/generic-app) v2.0.4, un chart generico que abstrae Deployment, Service, Ingress, HPA, SealedSecrets y Docker pull secrets. Se publica via GitHub Pages en `https://moreirodamian.github.io/helm-charts/`.
+
+Archivos de values:
+
+| Archivo | Contenido |
+|---------|-----------|
+| `values.yaml` | Configuracion base compartida: imagen, puertos, probes, service, sealed secret de Docker Hub |
+| `values-dev.yaml` | Override para dev: recursos, conexion a DB, ingress, sealed secrets |
+| `values-prod.yaml` | Override para prod: recursos, conexion a DB, ingress, sealed secrets |
+
+ArgoCD renderiza el chart combinando `values.yaml` + `values-<env>.yaml`.
+
+### Terraform
+
+La infraestructura de ArgoCD Applications y DigitalOcean Spaces se gestiona con Terraform en `configuration/devops/terraform-infra/`.
+
+```bash
+cd configuration/devops/terraform-infra
+
+# Inicializar
+terraform init
+
+# Crear workspaces
+terraform workspace new dev-nyc1
+terraform workspace new prod-nyc1
+
+# Aplicar para dev
+terraform workspace select dev-nyc1
+terraform apply
+
+# Aplicar para prod
+terraform workspace select prod-nyc1
+terraform apply
+```
+
+Recursos creados por ambiente:
+- **ArgoCD Application** — app en el proyecto `dm-mvps` apuntando al chart Helm del repo
+- **DigitalOcean Space** — bucket `djv-raidcontrol-assets-<env>` en nyc3
+
+### Secrets
+
+Los secrets sensibles (DB_PASSWORD, JWT_SECRET, ADMIN_PASSWORD, DEVICE_API_KEY, ADMIN_USERNAME) estan encriptados con [Bitnami Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets). Los valores sellados van directamente en los values de Helm y el controlador de sealed-secrets en el cluster los desencripta en runtime.
+
+El pull secret de Docker Hub (`.dockerconfigjson`) tambien esta sellado en `values.yaml`.
+
+### Variables requeridas en GitHub
+
+Para que los workflows funcionen, configurar en GitHub Settings > Environments:
+
+**Secrets:**
+- `DOCKERHUB_TOKEN` — token de Docker Hub
+- `ARGOCD_TOKEN` — token de ArgoCD
+
+**Variables:**
+- `DOCKER_ORG` — organizacion de Docker Hub (ej: `kodearsrl`)
+- `DOCKERHUB_USERNAME` — usuario de Docker Hub
+- `ARGOCD_URL` — URL del servidor ArgoCD
+
+---
+
 ## Reglas de negocio
 
 - **Dorsal unico**: `bib_number` no se repite entre ciclistas

@@ -1,0 +1,34 @@
+generic-app:
+    name: djv-raidcontrol-backend-prod
+    deployEnv: prod
+
+    hpa:
+        minReplicas: 2
+
+    app:
+        resources:
+            requests:
+                cpu: 100m
+                memory: 256M
+            limits:
+                memory: 1024M
+        env:
+            UPLOAD_DIR: "/app/uploads"
+            NEEDS_REVIEW_MIN_CONF: "0.60"
+            FINISH_CHECKPOINT_ID: "finish"
+            DB_HOST: "10.136.211.85"
+            DB_PORT: "3306"
+            DB_NAME: "mvp-raidcontrol-backend-prod"
+            DB_USER: "mvp-raidcontrol-backend-prod"
+
+    ingress:
+        hosts:
+            - api.vueltaalpartido.com.ar
+
+    sealedSecrets:
+        encryptedData:
+            DB_PASSWORD: AgCg0YLyYxPah42jUCXTXbdHGyW2CGDb4/hsNferUW1v1o8zjjPc6ju0QHTz1LycesUq2c5G/T/VuxmJgOxM2oWIwazwOJvmL4oL/6KT29jg+feGy5bDv1zm9S1z5U//9VpB9U7b6kVm6oSEAMfPmjQjcRXERZ//dS6aQngR5CK+6IeQdHgnccASR3fZi16nzV6EUNNYZQT2TkF6nY8nkPEJePZzRj0qNu44A17PlzrtOVZOPoJNbJ/qxk8A4DVucO1zlQOPXOqt1AnzWGbmOE3by8iQHEo8j91W1C0ylxecTTq2OIVzokbOt2tf+Nh9EabG96SzCzm1kBeoTixWu+4uCkW8jFD7Rm7rZv32EzV/GIps95ybDK6WmAKmOPkmFujk8v1CEPE6xgsHrndo2gZn0MjvYpzU+/wW1gETtI+CYfNfs98mqR79lM1qBZymYvcm48u3m/wmw6bmomUclsUHMcMafVnc7EHTTpvnW/1CDD18gqu6SoBDI4DX83emjk09aTeyvdQnSnBxFrvTjD04A7n2wIwnxP7wwCoFboPUH59cx18ItsypW/2VIlVZe8jHHd2/YZC8l0Jvd2LrpqEJK0kUllDGt2rV0OR2ag+H1FC/5nAyIsIPLOhPXnTb555LNCz2qtOwC1YvUNdhPVQjP83UgjkLvJa9/1Hs1/zYFnBSoUXedkJFei+S2aduHJmWGKkHMiwcZE1vOjKJdiKo4YWKcUvfY3A5QHEbJdXqHg==
+            DEVICE_API_KEY: AgAmp3ErDegXCHGm0lOu5Ze5i0YoVGU6DkqcmB7OEsF1ZkRjR5kfpmRIL/8mfJWD0rhuBU9kCWcZncE1O4Eno9WYLZ+ROL3w1TFxc1k/AcZ5Sl9Ax40cxi5zeDjK1eU0kfYPSOKRoNLfEG/Lqt+6axNVQDls4gr5ixsTWC1oIIS8z00pQpYNj9deLzrbAa2Dtwx+jNyJ8VzbAUDfLFIFBxUJCnlDTOmLfgkZBIUivBY3oz+OU6S7XIpaE8w42Tp05HTnCUIXA8zAy6ZLz5iDbMmm2dc/FWT8fQ86ZtqQVAuM9OZfBP3naGcfVwtEvxM0z/Uns6TfU3a8uq0c1U4tzslyuCnDh2QV7I76YMMkKBD+B35PwN6xjfiZZavJ0QubbxCB0g/yaIBlViLxjAgOdgirFMn5xS034JTmFWsw59zreF+cpHLr/McD9Tkbg7c2Qhq1w6TaSDOdlUWoEi/RzESGgOEvScLMBnIog8aVIBY9goyOGJDcm6N+uEjG4jCvKYqzG+F953qEaIyrdrsWfY8y3+OmnrmOrIPMswRXZyd037YCT75bKHWdDs6DMXLt20hzEXzu8D9BEm5VTUvR1yaU3pXh6PDuXvH2TGp94+lnxvltXWygFKd2OWLgbgDUDmoJolmwvlKwgbLaGVs6+PZKJcmMM2Hft1nA8Ls2HzAxocmlU0uRLzOhyHFzo/E5utA6QB9yZ0RsVJNTa4DeWUzYYOPaWuXHhwNFRIVxeTA6kgatL6oB49aQYD+pjqcssQJnO2URy8TezLqiAvPqIg0I
+            ADMIN_USERNAME: AgAgZ0DIsjzlc4StnJcncSejRlu1n7eNgtzhh0btZyTXGiAbnLAQT9fkVAwHwFpd4/tYwJjT2DG3bMaMTvsQWWmxZAoZwT9HxixfEslMtY476NlongJssqeu8DzaY/uuYFD0wgcwtkZkS0Bo1WZnTEhhL1qmcQKPz33UJqZM5SORASJuukZpsuLRfvTZJ3AO+Z2H3zsZ5DIX72RR+RmCy8LrlY6jROiQpzkeLTj8YT88F0ycVNgxmkxU5IIhAVkhy/y0wRKT3X7c3YJqJ/L8RUnAUuBGz4GxkCnS6IJYDxZecTuPntZjMbYtz8jPwpdMGngnisPB9Ciotx8/OeGdcHol6tGqLZvIdHfNjwvvVhLghREwauWNKybDhmS1mIseff7U2VQpI/TUV1J9QqZdrl0YMvaUCgLijSmEdFCzCxz5szVGVR1Fd8wIdVP0HuYSSqW1I+5OgIaKwj3ZFyetfJb/GWvceoQmkoDBCqesZB/t6gdm+F+4cVv8o97ZgJ3VnaRFdW6wyDUr721NuAU17+FVfAOLMOjvhB/iNQk1pEkGMU7SSHX2ZdqommfQhVtrkqI2yW6qJfaFsaB/duTvai0NZpBDvIvQwpFKjS60WKXgxUzjkCJK7sr/aAsVSoydUR4tFzTqUYggc6LPxpP4ijm2oVavXE3z5/Y/OfRjSLubzmGfAGKiV4P5UuBjAV8HTDkQrhs9yg==
+            ADMIN_PASSWORD: AgDIB8Iwd5qTvFWLhVBlzjWUsbTT8Kl1wO7aqK1NOU3myaTXzlPMlZncU9DolIq3fe2PBjDh/q/sXS1e4GN+snP9lVGqdFhWJlvQEiKS11NPPL5XL8MuaDbGMwh64ZIoaKIPD6Wup5mxoWORWh1cY35SgWYCVd35vK4L5pnoZEUdbbb7DLjUQc2/w9v0MyanLDTMRhws1zGKgksvzUZKLdHLupjEp0n+uzehLl6xma7c+e/MO2dIQJ87YqyQ4FoSBz7cJu3GfxeQK6TYWJ4fLIQax5IZCkF54u53fglMi9gCT7OwuzK+jKqla0848/yknrOnNl05qhir+tzaH+0XmRG6aNQhbQcXjd/gPvxCNfGQXFgMi1ZZi8YjGttskjGngbjtp8cXyx8bnLzSEL9eEwe/yoSzKKCPzsWt6Pd+qAbK98mGOi/8T98PWcVL5pzQWq3V8Q7PgPybUE+PoCdD7jeXuQwCRu+fxFnW4Mc9EvueOdldzYeRA2YI7JwlE7496IzlCbTacC5P+/lWsKolV7ZCbRZiq74brAIdoQGfjL+QoikP+xvIvhx4xXve62EdHJsbK+jzAzfBnZsZJcPVENYcCxIHm/R/QXpATqWz9kaGgBSBDDzaEXmy104r1AlHHmkbzcCkeyfyKHIRIVzPzQaiDcmu+gk9eDY5H/KnSdLJjBWFy6dKglDTu0OewZIDzVUlY7n8yW4VKufXDyVsMHaltLBptTUOybOF42hHKItehw==
+            JWT_SECRET: AgBkIwUMTP4KkAgYuUG2Jj7sTHPSpswG7pUuJZRizjlJuhOEZDp3u04GVIDjEPgbjFyits/adHJ1ilyEusA1hbpJVdu8h8kgvFGUiQfCk7UdgoigZHYlECsGVlVdagUU1kXdnzul2BYgWLQ+EibP/rbQABBdJDgC99ALpWpM8IOo5MbQCT27JUmSEpP6zV7cQnCyMgKukRVXvWPBwvOApolNefU7m7eKYzkE5wKAQeFArlmkXrt7fDaOyLmKXfZLPbPdAH1KPj3TXsjvYBjeXjOhN9UUp/mH0ltnsZF5EHdAtku2nmzkIHdV/FxPqQORGDJutnYcBHu3f1O2rQwQ15qdvVIVK6oPW2fyJW75UKSHY1pgTNH+SJE8xLEuZqptwydlhof+BbHsSd2nNt2Zz8pXes/SGdO7E6IkqqChulvWlwYXby2PRm+ReyFiHoHgHFhbA7D9/LlCF3TiiKZ+tGBdhc4JYzScIgmgDVdzz3SSP05GxZUFdrfxErmnkcsFWJ/ItUcSlhpq+PuBRquRW6J6U7YJQzCfj74TZW6U+NnRDa8IbH69MmQbUJ51jMwdYkDL6smr2jmu70wpB0LxcnwJPzrT9UAT8cM5qjAVidT+ek2HQqh7M33XDVyOSF6OsbrN8Cc8hWLOFhrcdJQZkYl3opc6D2xyCn9L2CamhbPXdMEeGDbGoUUXxZ7y6hf+iqQcCTBQ3YCIdeHyWGXzcd1OhasEFQM+05KJ/FC1Qy3J8gqb0S+ZStfhyHHRvxeOgsDlCdCEuyb2FhruA2EuRrtYTm+l8qoiWSRW35YRz4s1m/WCii4fZVH29Yq9OWA7uyg=

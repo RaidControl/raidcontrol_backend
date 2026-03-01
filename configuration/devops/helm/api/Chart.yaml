@@ -1,0 +1,10 @@
+apiVersion: v2
+name: api
+description: Helm chart for raidcontrol-backend
+type: application
+version: 0.0.0
+
+dependencies:
+  - name: generic-app
+    version: 2.0.4
+    repository: https://moreirodamian.github.io/helm-charts/

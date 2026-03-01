@@ -1,0 +1,60 @@
+generic-app:
+    region: nyc1
+
+    hpa:
+        minReplicas: 1
+        maxReplicas: 5
+        cpuPercentage: 80
+
+    revisionHistoryLimit: 1
+
+    rollout: ~
+
+    dockerSecret:
+        encryptedData:
+            .dockerconfigjson: AgC5C1h2z+jrJCtp/dH3vCzwWX7vW4xbxk9GjFkH8ND+iRdP7BB+lU5xKAjjrG8TZqMIteR$
+    app:
+        image:
+            registry: registry.hub.docker.com/kodearsrl
+            name: raidcontrol_backend
+            tag: "0.0.1"
+        ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+        livenessProbe:
+            httpGet:
+                path: /health
+                port: http
+        readinessProbe:
+            httpGet:
+                path: /health
+                port: http
+        startupProbe:
+            httpGet:
+                path: /health
+                port: http
+                scheme: HTTP
+            failureThreshold: 30
+            periodSeconds: 2
+
+    service:
+        create: true
+        grpc: false
+        type: ClusterIP
+        port: 8000
+        targetPort: 8000
+
+    sealedSecrets:
+        enabled: true
+        type: Opaque
+        annotations:
+            helm.sh/hook-weight: "-5"
+            sealedsecrets.bitnami.com/cluster-wide: "true"
+
+    ingress:
+        create: true
+        grpc: false
+        letsencrypt: true
+        annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod

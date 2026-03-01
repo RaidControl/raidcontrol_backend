@@ -1,0 +1,57 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARGOCD_APPS: "argocd/djv-raidcontrol-backend-dev"
+  DOCKERFILE: "./configuration/devops/Dockerfile"
+  ENV: "dev"
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: Development
+    concurrency:
+      group: Development
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(echo "${{ github.sha }}" | cut -c1-7)"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+          if [[ -f package.json ]]; then
+            BASE_VERSION="$(jq -r '.version' package.json)"
+          else
+            BASE_VERSION="0.0.1"
+          fi
+          echo "base_version=${BASE_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Push Docker image
+        uses: moreirodamian/github-actions/docker-build@v1
+        with:
+          repository: ${{ vars.DOCKER_ORG }}/${{ github.event.repository.name }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          tag: "${{ steps.meta.outputs.base_version }}-${{ steps.meta.outputs.short_sha }}"
+          dockerfile_path: ${{ env.DOCKERFILE }}
+
+      - name: Deploy with ArgoCD
+        uses: moreirodamian/github-actions/argocd-deploy@v1
+        with:
+          argocd_url: ${{ vars.ARGOCD_URL }}
+          argocd_token: ${{ secrets.ARGOCD_TOKEN }}
+          argocd_apps: ${{ env.ARGOCD_APPS }}
+          version: "${{ steps.meta.outputs.base_version }}-${{ steps.meta.outputs.short_sha }}"
+          revision: ${{ github.sha }}
