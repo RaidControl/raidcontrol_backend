@@ -58,3 +58,11 @@ generic-app:
         letsencrypt: true
         annotations:
             cert-manager.io/cluster-issuer: letsencrypt-prod
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+            nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+            nginx.ingress.kubernetes.io/session-cookie-name: "SERVERID"
+            nginx.ingress.kubernetes.io/session-cookie-path: "/"
+            nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
