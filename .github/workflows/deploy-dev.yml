@@ -55,3 +55,4 @@ jobs:
           argocd_apps: ${{ env.ARGOCD_APPS }}
           version: "${{ steps.meta.outputs.base_version }}-${{ steps.meta.outputs.short_sha }}"
           revision: ${{ github.sha }}
+          helm_values: "generic-app.app.image.tag=${{ steps.meta.outputs.base_version }}-${{ steps.meta.outputs.short_sha }}"
