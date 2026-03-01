@@ -341,7 +341,20 @@ Formato:
 
 ## Continuous Deployment
 
-El proyecto usa un pipeline de CD completo sobre Kubernetes (DigitalOcean) con ArgoCD como motor de GitOps.
+El proyecto usa un pipeline de CD completo sobre Kubernetes (DigitalOcean) con [ArgoCD](https://argo-cd.readthedocs.io/) como motor de GitOps.
+
+**ArgoCD** es una herramienta de Continuous Delivery declarativa para Kubernetes. Funciona como operador GitOps: monitorea un repositorio Git (en este caso, el Helm chart del proyecto) y se encarga de que el estado del cluster de Kubernetes coincida con lo definido en el repo. Cuando GitHub Actions actualiza el tag de la imagen, ArgoCD detecta el cambio y sincroniza automáticamente el deployment en el cluster, sin intervención manual.
+
+### URLs
+
+| Ambiente | URL |
+|----------|-----|
+| **Producción** | https://api.vueltaalpartido.com.ar |
+| **Desarrollo** | https://api.dev.vueltaalpartido.com.ar |
+
+### DNS
+
+La zona DNS de `vueltaalpartido.com.ar` está gestionada en **Cloudflare**. Los registros A/CNAME del backend apuntan al Ingress del cluster de Kubernetes en DigitalOcean.
 
 ### Arquitectura
 
