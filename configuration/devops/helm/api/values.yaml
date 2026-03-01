@@ -12,7 +12,7 @@ generic-app:
 
     dockerSecret:
         encryptedData:
-            .dockerconfigjson: AgC5C1h2z+jrJCtp/dH3vCzwWX7vW4xbxk9GjFkH8ND+iRdP7BB+lU5xKAjjrG8TZqMIteR$
+            .dockerconfigjson: AgC5C1h2z+jrJCtp/dH3vCzwWX7vW4xbxk9GjFkH8ND+iRdP7BB+lU5xKAjjrG8TZqMIteR12mT5VCrt9AOnyoaH4Cn5c1gcn1upMyALcF/m3OUvqkyQHICsQ+lCxBh2YanIq6qRxcZX32stdEaZUKNFPlTsDGgvewmJW2LNfsgcSv/6dT0Jl+AFk6TikM+0m3rBkSaNkbRCgiESPDYJK061w1rAjhiLFfx5MxXJeA68ksakamxBZMAtVZGS8CrBP8cswwyifOBvCXUygIionSDgftyJyQIUfYkO41le74aSn4L1jtZV/edPaSeUjW7nrAVKijCWVh7IYDBZGGkbiyhVsTm+ToQ8XB5JXaIdyvp6bntcocAG6sEoY75ku3AJXA+z2g0Strb0KiA1z0lclR2x2KNrudCvssjXiFlrLn2aN7KJt5sCtfcH7YtdVTy/6vRK0qFjWUywDh98l4YxDBcfWqOEB+hUKMFz6/jmAUNZValicthyuXPbQYa16uBNBSq0tWSemQjFtXBR+PTQTKsYQHfU63GXUVwOpwo9YoNZjOWDOfqalaxdrzoRhYObwMs7g4sNhhTshL8woCxqOBvd0GcsylQ5tSrfDiPjLEGWjtW6z2kpGGLBzz8d7goD53Unq4FYD+xOkfnceObt+3Abi7XaaBdqshE+0eBtNxEq7Fj4t7QyuP0iVZwPd6k2c3hgsMAfiT1OjwFiolelW98GnOX+RasGs5nOSMDkLX5WKbKily0lAJtC2CmHWoHMrnyJLw017T0RyB1eHcvnSuiX1x8SkBBRTigTs3cq8tDW54mki3xKrqCBBZL2YqVIGeHOeoEN8vpkjZ4ZJe9Cgi8s3lbfS/0tavsIgBbq4PZhdipfqpjFFotcqsMB4nMeW9q7ylyJpnARdpGiPA7dlTj/TMEZ+7WH1DdnpR9nvqaIgyXUPxWfdvORxagFbpDt459ms7c1Kz9xYaKkWK2YYSNzAUgkHPI=
     app:
         image:
             registry: registry.hub.docker.com/kodearsrl
