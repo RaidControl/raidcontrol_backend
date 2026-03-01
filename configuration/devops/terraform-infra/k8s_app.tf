@@ -31,7 +31,7 @@ resource "kubectl_manifest" "api" {
             - "values-${local.env}.yaml"
           version: v3
         path: configuration/devops/helm/api
-        repoURL: "https://github.com/canalevale/raidcontrol_backend.git"
+        repoURL: "https://github.com/RaidControl/raidcontrol_backend.git"
         targetRevision: ${local.target_revision[local.env]}
       syncPolicy:
         syncOptions:
