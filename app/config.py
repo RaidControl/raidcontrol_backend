@@ -1,0 +1,33 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Database
+    db_host: str
+    db_port: int = 3306
+    db_name: str
+    db_user: str
+    db_password: str
+
+    # Auth
+    device_api_key: str
+    admin_username: str
+    admin_password: str
+    jwt_secret: str
+    jwt_expires_min: int = 720
+
+    # App
+    upload_dir: str = "uploads"
+    needs_review_min_conf: float = 0.60
+    finish_checkpoint_id: str = "finish"
+
+    @property
+    def sqlalchemy_url(self) -> str:
+        return (
+            f"mysql+pymysql://{self.db_user}:{self.db_password}"
+            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+            f"?charset=utf8mb4"
+        )
+
+settings = Settings()
