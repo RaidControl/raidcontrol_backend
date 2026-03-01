@@ -13,6 +13,9 @@ generic-app:
     dockerSecret:
         encryptedData:
             .dockerconfigjson: AgAhcvbHv+pcUxP5isNomztlHyxU3a1TPO7XzmEp8lnsLJW2lNMcjlhns4Thy/s53KQl+v44nxkoY7TwuAEUejI+I3xOEkwixf8JgvnuxgdPJgdxDo4xsy5LY0SkKVLMD8nSBHk2y4DutBxPyAeMvfE2CGS1xKDSQ55J3mtiLJJoqKxMUNiSTexfuyyj5/IbKlSNNJfNm5d7uF+CvQ83Ot4Ly4LmjqZN6QZd15LsPQ60cninCj93a9taFKN8pKhYkhRoHrkWWnn4VtoauWDMhiu8LP1irZA0hBTfOv7RFamVPGRlNB2aAsjWvDVC5fHX1HnBUnnSuknDK9jkmNlf8GLZAJXEY6viJtfHXPjok7V5VpQEs3OveIEL0nE3dMLbwGzAcuWbYNtKrkwAV5nvbn3MTmoOEYFbWRyOBGMLr/4YeaavObJfDwsOz7qtmAjr9itMMb2xV+RL1QTotx7MnrW7a8rDmK/zPlnBR+5kg6GFIyoPoYaivxzjJM0oSlZUvyJk34VzINjH9afsuVpiHOzwzeDnRA0Cditimw1vG7LeeSuB5nFLmYMsFapV0NUIc1k2N6Eey4Qi8Uz48vIs1kkxFixYGW8gv+HIeUzUZECITnBymni+rq/YsPOTdJZiXaT/8FW3yfRUsdVLdIR0aAnpYHCy32Q9ufq+ljjj/pKklxkYlIZBr7UdWf882r05XbuPmE3q3DIYfh4VSzvOo4r3ACJwVN77P4+MuUL1eB0uzjbpzkn20PedEgOsw2qSGGyLjHq7mlx82Qvot/2PIe6PM3grCjUsLx2gXwN1GXUbZZ951Qfd8Jbvhgngc40qmgNM8ilPXEH1ZHTqH5SljTwVTCVjlA/VueQIPxwk27VJaRyP03BHTzKjzkAmexd/wz7kmzl6nNrhAHvM58mCeikXy2gPF2Du5q/YxyoLLbDEszaZzGFQAE9l5/k2vDdQT9oi90qMrxRvGvvNtyUq/TJ3i5xTG74=
+        annotations:
+            sealedsecrets.bitnami.com/cluster-wide: "true"
+            helm.sh/hook-weight: "-5"
     app:
         image:
             registry: registry.hub.docker.com/kodearsrl
