@@ -41,6 +41,11 @@ docker compose watch
 | `UPLOAD_DIR` | `uploads` | Carpeta para imagenes |
 | `NEEDS_REVIEW_MIN_CONF` | `0.60` | Confianza minima para marcar "ok" |
 | `FINISH_CHECKPOINT_ID` | `finish` | Checkpoint ID de meta (deprecated, usar is_meta) |
+| `SPACES_ACCESS_KEY` | — | DigitalOcean Spaces access key (opcional) |
+| `SPACES_SECRET_KEY` | — | DigitalOcean Spaces secret key (opcional) |
+| `SPACES_BUCKET` | — | Nombre del bucket (si vacio, usa storage local) |
+| `SPACES_REGION` | `nyc3` | Region del bucket |
+| `SPACES_CDN_DOMAIN` | — | Dominio CDN custom (opcional) |
 
 ## Autenticacion
 
@@ -81,6 +86,8 @@ Usar en requests admin: `Authorization: Bearer <token>`
 | GET | `/api/v1/public/feed` | Feed de eventos recientes |
 | GET | `/api/v1/public/stats` | Estadisticas de ciclistas por status |
 | GET | `/api/v1/public/leaderboard` | Ranking por checkpoint |
+| GET | `/api/v1/public/cyclists/search` | Buscar ciclista por dorsal o nombre |
+| GET | `/api/v1/public/cyclists/{numero}` | Ficha de ciclista con historial de detecciones |
 | GET | `/api/v1/public/events/{event_id}/image` | Imagen de un evento |
 
 #### GET /api/v1/public/feed
@@ -95,6 +102,37 @@ Query params:
 - `since` — ISO datetime, solo eventos posteriores
 
 Solo devuelve eventos con `status=ok` y ciclista identificado.
+
+#### GET /api/v1/public/cyclists/search
+
+Query params:
+- `q` **(requerido)** — numero de dorsal o nombre/apellido
+
+Si `q` es numerico, busca por `numero` exacto. Si es texto, busca por nombre/apellido (ILIKE). Max 10 resultados.
+
+```json
+{
+  "results": [
+    {"id": 1, "numero": 42, "nombre": "Juan", "apellido": "Perez", "circuito": "100km", "genero": "M", "categoria": "Elite", "status": "en_carrera"}
+  ]
+}
+```
+
+#### GET /api/v1/public/cyclists/{numero}
+
+Ficha completa del ciclista con historial de detecciones (checkpoints visitados, tiempos).
+
+```json
+{
+  "id": 1, "numero": 42, "nombre": "Juan", "apellido": "Perez",
+  "circuito": "100km", "status": "en_carrera",
+  "detections": [
+    {"event_id": 10, "checkpoint_id": "pc1", "checkpoint_name": "Puesto de Control 1", "ts": "2026-03-01T09:15:00Z", "elapsed_seconds": 4500, "image_url": "https://..."}
+  ]
+}
+```
+
+404 si no existe el ciclista.
 
 #### GET /api/v1/public/stats
 
@@ -457,4 +495,6 @@ Para que los workflows funcionen, configurar en GitHub Settings > Environments:
 - **Duplicados**: si un dorsal ya tiene evento OK en un checkpoint, el nuevo va a `needs_review`
 - **Auto "llego"**: evento OK en checkpoint meta → ciclista pasa a `status=llego` (no sobrescribe `abandono`)
 - **Confianza**: eventos con confianza < 0.60 van a `needs_review`
+- **Ciclista no registrado**: si el bib detectado no existe en la tabla cyclists → `needs_review` con nota
 - **Soft delete**: eventos eliminados se marcan con `deleted_at`, no se borran fisicamente
+- **Storage**: si `SPACES_BUCKET` esta configurado, las imagenes se suben a DigitalOcean Spaces con URL publica directa. Si no, se guardan localmente en `uploads/`
