@@ -58,6 +58,45 @@ class PublicStats(BaseModel):
 
     _ensure_utc_updated_at = field_validator("updated_at", mode="before")(_to_utc)
 
+class CyclistSearchResult(BaseModel):
+    id: int
+    numero: int
+    nombre: str
+    apellido: str
+    circuito: str | None
+    genero: str | None
+    categoria: str | None
+    status: str
+
+class CyclistSearchResponse(BaseModel):
+    results: list[CyclistSearchResult]
+
+class CyclistDetection(BaseModel):
+    event_id: int
+    checkpoint_id: str
+    checkpoint_name: str | None
+    ts: datetime
+    elapsed_seconds: int | None
+    image_url: str | None
+
+    _ensure_utc_ts = field_validator("ts", mode="before")(_to_utc)
+
+class PublicCyclistDetail(BaseModel):
+    id: int
+    numero: int
+    nombre: str
+    apellido: str
+    circuito: str | None
+    genero: str | None
+    categoria: str | None
+    localidad: str | None
+    hora_salida: str | None
+    status: str
+    hora_llegada: datetime | None
+    detections: list[CyclistDetection]
+
+    _ensure_utc_hora_llegada = field_validator("hora_llegada", mode="before")(_to_utc)
+
 class FiltersResponse(BaseModel):
     checkpoints: list[dict]
     categories: list[str]
