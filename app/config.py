@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     needs_review_min_conf: float = 0.60
     finish_checkpoint_id: str = "finish"
 
+    # DigitalOcean Spaces (S3-compatible)
+    spaces_access_key: str = ""
+    spaces_secret_key: str = ""
+    spaces_bucket: str = ""
+    spaces_region: str = "nyc3"
+    spaces_cdn_domain: str = ""
+
     @property
     def sqlalchemy_url(self) -> str:
         return (
