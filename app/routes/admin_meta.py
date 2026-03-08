@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_db
 from app.deps import get_current_admin
-from app.models import Cyclist, Event
+from app.models import Cyclist, Event, RaceSetting
+from app.schemas import RaceSettingsUpdate
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -65,3 +66,30 @@ def admin_get_settings(admin_user: str = Depends(get_current_admin)):
         if len(settings.device_api_key) > 4
         else "****",
     }
+
+
+@router.get("/race-settings")
+def admin_get_race_settings(
+    admin_user: str = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(RaceSetting).filter(RaceSetting.key == "race_start_time").first()
+    return {"race_start_time": row.value if row else None}
+
+
+@router.put("/race-settings")
+def admin_update_race_settings(
+    body: RaceSettingsUpdate,
+    admin_user: str = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    row = db.query(RaceSetting).filter(RaceSetting.key == "race_start_time").first()
+    if row:
+        row.value = body.race_start_time
+        row.updated_at = datetime.now()
+    else:
+        row = RaceSetting(key="race_start_time", value=body.race_start_time)
+        db.add(row)
+    db.commit()
+    db.refresh(row)
+    return {"race_start_time": row.value}

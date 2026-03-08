@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
@@ -9,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.helpers import event_to_public
-from app.models import Checkpoint, Cyclist, Event
+from app.models import Checkpoint, Cyclist, Event, RaceSetting
 from app.schemas import (
     CyclistDetection,
     CyclistSearchResponse,
@@ -21,11 +22,29 @@ from app.schemas import (
     PublicEvent,
     PublicFeedResponse,
     PublicStats,
+    RaceSettingsPublic,
 )
 from app.storage import get_image_url, is_spaces_path
 from app.utils import compute_elapsed_seconds, parse_iso_dt
 
 router = APIRouter(prefix="/api/v1/public", tags=["public"])
+
+
+@router.get("/race-settings", response_model=RaceSettingsPublic)
+def public_race_settings(db: Session = Depends(get_db)):
+    row = db.query(RaceSetting).filter(RaceSetting.key == "race_start_time").first()
+    if not row or not row.value:
+        return RaceSettingsPublic(race_start_time=None, countdown_active=False)
+
+    try:
+        target = datetime.fromisoformat(row.value)
+        if target.tzinfo is None:
+            target = target.replace(tzinfo=timezone.utc)
+        is_active = target > datetime.now(timezone.utc)
+    except (ValueError, TypeError):
+        return RaceSettingsPublic(race_start_time=row.value, countdown_active=False)
+
+    return RaceSettingsPublic(race_start_time=row.value, countdown_active=is_active)
 
 
 @router.get("/filters", response_model=FiltersResponse)
@@ -105,9 +124,6 @@ def public_feed(
         out.append(event_to_public(ev, cyclist))
 
     return PublicFeedResponse(events=out)
-
-
-from datetime import datetime, timezone
 
 
 @router.get("/stats", response_model=PublicStats)

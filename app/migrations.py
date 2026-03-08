@@ -59,6 +59,18 @@ def run_migrations():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE cyclists ADD COLUMN hora_llegada DATETIME NULL"))
 
+    # Migration: race_settings table
+    if "race_settings" not in insp.get_table_names():
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE race_settings (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    `key` VARCHAR(64) NOT NULL UNIQUE,
+                    value TEXT,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+            """))
+
 
 def wait_for_db():
     max_tries = 60

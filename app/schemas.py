@@ -274,3 +274,13 @@ class DeviceUpdate(BaseModel):
     name: str | None = None
     checkpoint_id: str | None = None
     is_active: bool | None = None
+
+# -----------------------
+# Race Settings
+# -----------------------
+class RaceSettingsPublic(BaseModel):
+    race_start_time: str | None = None
+    countdown_active: bool = False
+
+class RaceSettingsUpdate(BaseModel):
+    race_start_time: str | None = None

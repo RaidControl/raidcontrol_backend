@@ -74,3 +74,14 @@ class Event(Base):
     @property
     def bib_number_effective(self) -> int | None:
         return self.bib_number_real if self.bib_number_real is not None else self.bib_number_pred
+
+class RaceSetting(Base):
+    __tablename__ = "race_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
