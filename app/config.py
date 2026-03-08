@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # App
     upload_dir: str = "uploads"
-    needs_review_min_conf: float = 0.60
+    needs_review_min_conf: float = 0.30
     finish_checkpoint_id: str = "finish"
 
     # DigitalOcean Spaces (S3-compatible)
