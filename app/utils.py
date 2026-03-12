@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def parse_iso_dt(s: str) -> datetime:
-    """Parse ISO 8601 datetime string, accepting 'Z' suffix."""
-    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    """Parse ISO 8601 datetime string, accepting 'Z' suffix.
+    Always returns a UTC datetime (naive) for consistent MySQL storage."""
+    dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def _parse_hora_salida(s: str) -> datetime | None:

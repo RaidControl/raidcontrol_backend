@@ -190,7 +190,7 @@ def admin_export_cyclists(
             c.localidad,
             c.hora_salida,
             c.status,
-            c.hora_llegada.strftime("%d/%m/%Y %H:%M:%S") if c.hora_llegada else "",
+            c.hora_llegada.strftime("%d/%m/%Y %H:%M:%S.") + f"{c.hora_llegada.microsecond // 1000:03d}" if c.hora_llegada else "",
         ])
 
     output.seek(0)

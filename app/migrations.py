@@ -72,6 +72,17 @@ def run_migrations():
             """))
 
 
+    # Migration: DATETIME → DATETIME(3) for millisecond precision
+    if "events" in insp.get_table_names():
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE events MODIFY ts DATETIME(3) NOT NULL"))
+            conn.execute(text("ALTER TABLE events MODIFY created_at DATETIME(3) NOT NULL"))
+            conn.execute(text("ALTER TABLE events MODIFY deleted_at DATETIME(3) NULL"))
+    if "cyclists" in insp.get_table_names():
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE cyclists MODIFY hora_llegada DATETIME(3) NULL"))
+
+
 def wait_for_db():
     max_tries = 60
     delay_sec = 1.0
