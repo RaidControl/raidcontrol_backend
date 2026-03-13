@@ -1,17 +1,18 @@
 from __future__ import annotations
-import os
-from datetime import datetime
-from fastapi import UploadFile
 
-def ensure_dir(path: str) -> None:
-    os.makedirs(path, exist_ok=True)
+from datetime import datetime, timezone
+
 
 def parse_iso_dt(s: str) -> datetime:
-    # Accept "Z" suffix
-    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    """Parse ISO 8601 datetime string, accepting 'Z' suffix.
+    Always returns a UTC datetime (naive) for consistent MySQL storage."""
+    dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
-def parse_hora_salida(s: str) -> datetime | None:
+def _parse_hora_salida(s: str) -> datetime | None:
     """Parse hora_salida from CSV format 'DD/MM/AAAA HH:MM' into naive datetime."""
     if not s or not s.strip():
         return None
@@ -28,7 +29,7 @@ def compute_elapsed_seconds(event_ts: datetime, hora_salida_str: str | None) -> 
     """Compute elapsed seconds between event timestamp and cyclist start time."""
     if not hora_salida_str:
         return None
-    start = parse_hora_salida(hora_salida_str)
+    start = _parse_hora_salida(hora_salida_str)
     if start is None:
         return None
     # If hora_salida is time-only (HH:MM), combine with event date
@@ -39,17 +40,3 @@ def compute_elapsed_seconds(event_ts: datetime, hora_salida_str: str | None) -> 
     diff = event_naive - start
     secs = int(diff.total_seconds())
     return secs if secs >= 0 else None
-
-
-async def save_upload(upload_dir: str, file: UploadFile) -> str:
-    ensure_dir(upload_dir)
-    filename = file.filename or "upload.jpg"
-    _, ext = os.path.splitext(filename)
-    ext = (ext or ".jpg").lower()
-    name = f"{os.urandom(16).hex()}{ext}"
-    out_path = os.path.join(upload_dir, name)
-
-    content = await file.read()
-    with open(out_path, "wb") as f:
-        f.write(content)
-    return out_path

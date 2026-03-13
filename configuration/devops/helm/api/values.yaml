@@ -69,3 +69,4 @@ generic-app:
             nginx.ingress.kubernetes.io/session-cookie-name: "SERVERID"
             nginx.ingress.kubernetes.io/session-cookie-path: "/"
             nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
+            nginx.ingress.kubernetes.io/proxy-body-size: "10m"

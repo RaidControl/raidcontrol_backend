@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Float, DateTime, Text, Boolean
+from sqlalchemy.dialects.mysql import DATETIME as MYSQL_DATETIME
 
 class Base(DeclarativeBase):
     pass
@@ -23,7 +24,7 @@ class Cyclist(Base):
     localidad: Mapped[str] = mapped_column(String(255))
 
     status: Mapped[str] = mapped_column(String(32), default="en_carrera")  # en_carrera|llego|abandono
-    hora_llegada: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    hora_llegada: Mapped[datetime | None] = mapped_column(MYSQL_DATETIME(fsp=3), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Checkpoint(Base):
@@ -50,7 +51,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    ts: Mapped[datetime] = mapped_column(DateTime, index=True)
+    ts: Mapped[datetime] = mapped_column(MYSQL_DATETIME(fsp=3), index=True)
 
     device_id: Mapped[str] = mapped_column(String(64), index=True)
     checkpoint_id: Mapped[str] = mapped_column(String(64), index=True)
@@ -67,10 +68,21 @@ class Event(Base):
     note: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     image_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(MYSQL_DATETIME(fsp=3), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(MYSQL_DATETIME(fsp=3), default=lambda: datetime.now(timezone.utc))
 
     @property
     def bib_number_effective(self) -> int | None:
         return self.bib_number_real if self.bib_number_real is not None else self.bib_number_pred
+
+class RaceSetting(Base):
+    __tablename__ = "race_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )

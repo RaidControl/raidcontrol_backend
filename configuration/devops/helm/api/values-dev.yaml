@@ -14,7 +14,7 @@ generic-app:
                 memory: 512M
         env:
             UPLOAD_DIR: "/app/uploads"
-            NEEDS_REVIEW_MIN_CONF: "0.60"
+            NEEDS_REVIEW_MIN_CONF: "0.30"
             FINISH_CHECKPOINT_ID: "finish"
             DB_HOST: "10.136.211.90"
             DB_PORT: "3306"

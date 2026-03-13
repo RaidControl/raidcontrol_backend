@@ -24,6 +24,88 @@ Para desarrollo con hot reload:
 docker compose watch
 ```
 
+## Modelo de datos
+
+### cyclists
+
+Ciclistas registrados (importados via CSV o creados manualmente).
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| `id` | INT PK | ID autoincremental |
+| `numero` | INT UNIQUE | Numero de dorsal |
+| `nombre` | VARCHAR(255) | Nombre |
+| `apellido` | VARCHAR(255) | Apellido |
+| `circuito` | VARCHAR(64) | Circuito/distancia (ej: "100km", "50km") |
+| `genero` | VARCHAR(32) | Genero (ej: "M", "F") |
+| `hora_salida` | VARCHAR(32) | Hora de largada ("DD/MM/AAAA HH:MM" o "HH:MM") |
+| `categoria` | VARCHAR(64) | Categoria (ej: "Elite", "Master A") |
+| `localidad` | VARCHAR(255) | Localidad de origen |
+| `status` | VARCHAR(32) | `en_carrera` \| `llego` \| `abandono` |
+| `hora_llegada` | DATETIME | Timestamp de llegada a meta (nullable) |
+| `created_at` | DATETIME | Fecha de creacion |
+
+### checkpoints
+
+Puntos de control en el recorrido.
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| `id` | INT PK | ID autoincremental |
+| `checkpoint_id` | VARCHAR(64) UNIQUE | Identificador (ej: "pc1", "finish") |
+| `name` | VARCHAR(255) | Nombre descriptivo |
+| `ordering` | INT | Orden en el recorrido |
+| `distances` | TEXT | JSON con distancias por circuito (ej: `{"100km": 60.0, "50km": 30.0}`) |
+| `is_meta` | BOOLEAN | Si es el checkpoint de meta |
+
+### devices
+
+Dispositivos edge (Raspberry Pi) que envian detecciones.
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| `id` | INT PK | ID autoincremental |
+| `device_id` | VARCHAR(64) UNIQUE | Identificador del dispositivo (ej: "rpi-01") |
+| `name` | VARCHAR(255) | Nombre descriptivo |
+| `checkpoint_id` | VARCHAR(64) | Checkpoint asignado (nullable) |
+| `is_active` | BOOLEAN | Si esta activo |
+| `created_at` | DATETIME | Fecha de creacion |
+
+### events
+
+Detecciones de ciclistas capturadas por los dispositivos.
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| `id` | INT PK | ID autoincremental |
+| `ts` | DATETIME | Timestamp del cruce (viene del dispositivo) |
+| `device_id` | VARCHAR(64) | Dispositivo que detecto |
+| `checkpoint_id` | VARCHAR(64) | Checkpoint donde se detecto |
+| `bib_number_pred` | INT | Dorsal predicho por OCR (nullable) |
+| `bib_number_real` | INT | Dorsal corregido por admin (nullable) |
+| `conf` | FLOAT | Confianza de la prediccion OCR (0-1) |
+| `plate_color` | VARCHAR(32) | Color de la placa (nullable) |
+| `bbox_json` | TEXT | Bounding box JSON (nullable) |
+| `meta_json` | TEXT | Metadata extra JSON (nullable) |
+| `status` | VARCHAR(32) | `ok` \| `needs_review` \| `rejected` |
+| `note` | VARCHAR(255) | Nota (ej: "possible duplicate") |
+| `image_path` | VARCHAR(255) | Ruta de imagen (Spaces key o path local) |
+| `deleted_at` | DATETIME | Soft delete (nullable) |
+| `created_at` | DATETIME | Fecha de creacion |
+
+`bib_number_effective` = `bib_number_real` si existe, sino `bib_number_pred`.
+
+### race_settings
+
+Configuracion dinamica key-value (ej: cuenta regresiva de largada).
+
+| Campo | Tipo | Descripcion |
+|-------|------|-------------|
+| `id` | INT PK | ID autoincremental |
+| `key` | VARCHAR(64) UNIQUE | Clave del setting (ej: "race_start_time") |
+| `value` | TEXT | Valor (nullable) |
+| `updated_at` | DATETIME | Ultima actualizacion (auto-update) |
+
 ## Variables de entorno (.env)
 
 | Variable | Default | Descripcion |
@@ -41,6 +123,11 @@ docker compose watch
 | `UPLOAD_DIR` | `uploads` | Carpeta para imagenes |
 | `NEEDS_REVIEW_MIN_CONF` | `0.60` | Confianza minima para marcar "ok" |
 | `FINISH_CHECKPOINT_ID` | `finish` | Checkpoint ID de meta (deprecated, usar is_meta) |
+| `SPACES_ACCESS_KEY` | — | DigitalOcean Spaces access key (opcional) |
+| `SPACES_SECRET_KEY` | — | DigitalOcean Spaces secret key (opcional) |
+| `SPACES_BUCKET` | — | Nombre del bucket (si vacio, usa storage local) |
+| `SPACES_REGION` | `nyc3` | Region del bucket |
+| `SPACES_CDN_DOMAIN` | — | Dominio CDN custom (opcional) |
 
 ## Autenticacion
 
@@ -77,11 +164,28 @@ Usar en requests admin: `Authorization: Bearer <token>`
 
 | Metodo | Ruta | Descripcion |
 |--------|------|-------------|
+| GET | `/api/v1/public/race-settings` | Config de cuenta regresiva (countdown) |
 | GET | `/api/v1/public/filters` | Checkpoints, categorias, distancias y generos disponibles |
 | GET | `/api/v1/public/feed` | Feed de eventos recientes |
 | GET | `/api/v1/public/stats` | Estadisticas de ciclistas por status |
 | GET | `/api/v1/public/leaderboard` | Ranking por checkpoint |
+| GET | `/api/v1/public/cyclists/search` | Buscar ciclista por dorsal o nombre |
+| GET | `/api/v1/public/cyclists/{numero}` | Ficha de ciclista con historial de detecciones |
 | GET | `/api/v1/public/events/{event_id}/image` | Imagen de un evento |
+
+#### GET /api/v1/public/race-settings
+
+Config de la cuenta regresiva de largada. Sin auth.
+
+```json
+{
+  "race_start_time": "2026-04-15T08:00:00-03:00",
+  "countdown_active": true
+}
+```
+
+- `race_start_time`: ISO 8601 con timezone, o `null` si no hay countdown configurado
+- `countdown_active`: `true` si la fecha es futura, `false` si ya paso o no esta configurado
 
 #### GET /api/v1/public/feed
 
@@ -95,6 +199,37 @@ Query params:
 - `since` — ISO datetime, solo eventos posteriores
 
 Solo devuelve eventos con `status=ok` y ciclista identificado.
+
+#### GET /api/v1/public/cyclists/search
+
+Query params:
+- `q` **(requerido)** — numero de dorsal o nombre/apellido
+
+Si `q` es numerico, busca por `numero` exacto. Si es texto, busca por nombre/apellido (ILIKE). Max 10 resultados.
+
+```json
+{
+  "results": [
+    {"id": 1, "numero": 42, "nombre": "Juan", "apellido": "Perez", "circuito": "100km", "genero": "M", "categoria": "Elite", "status": "en_carrera"}
+  ]
+}
+```
+
+#### GET /api/v1/public/cyclists/{numero}
+
+Ficha completa del ciclista con historial de detecciones (checkpoints visitados, tiempos).
+
+```json
+{
+  "id": 1, "numero": 42, "nombre": "Juan", "apellido": "Perez",
+  "circuito": "100km", "status": "en_carrera",
+  "detections": [
+    {"event_id": 10, "checkpoint_id": "pc1", "checkpoint_name": "Puesto de Control 1", "ts": "2026-03-01T09:15:00Z", "elapsed_seconds": 4500, "image_url": "https://..."}
+  ]
+}
+```
+
+404 si no existe el ciclista.
 
 #### GET /api/v1/public/stats
 
@@ -299,6 +434,34 @@ Nombre,Apellido,Numero,Circuito,Genero,Hora de Salida,Categoria,Localidad,Status
 | GET | `/api/v1/admin/dashboard` | Stats resumen |
 | GET | `/api/v1/admin/categories` | Categorias con count de ciclistas |
 | GET | `/api/v1/admin/settings` | Configuracion actual (read-only) |
+| GET | `/api/v1/admin/race-settings` | Leer config de cuenta regresiva |
+| PUT | `/api/v1/admin/race-settings` | Configurar/desactivar cuenta regresiva |
+
+### Admin — Cuenta Regresiva
+
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| GET | `/api/v1/admin/race-settings` | Leer config de cuenta regresiva |
+| PUT | `/api/v1/admin/race-settings` | Configurar/desactivar cuenta regresiva |
+
+#### GET /api/v1/admin/race-settings
+
+```json
+{
+  "race_start_time": "2026-04-15T08:00:00-03:00"
+}
+```
+
+#### PUT /api/v1/admin/race-settings
+
+```json
+{
+  "race_start_time": "2026-04-15T08:00:00-03:00"
+}
+```
+
+- Enviar `{"race_start_time": null}` para desactivar la cuenta regresiva
+- Upsert: si no existe el setting lo crea, si existe lo actualiza
 
 ---
 
@@ -457,4 +620,6 @@ Para que los workflows funcionen, configurar en GitHub Settings > Environments:
 - **Duplicados**: si un dorsal ya tiene evento OK en un checkpoint, el nuevo va a `needs_review`
 - **Auto "llego"**: evento OK en checkpoint meta → ciclista pasa a `status=llego` (no sobrescribe `abandono`)
 - **Confianza**: eventos con confianza < 0.60 van a `needs_review`
+- **Ciclista no registrado**: si el bib detectado no existe en la tabla cyclists → `needs_review` con nota
 - **Soft delete**: eventos eliminados se marcan con `deleted_at`, no se borran fisicamente
+- **Storage**: si `SPACES_BUCKET` esta configurado, las imagenes se suben a DigitalOcean Spaces con URL publica directa. Si no, se guardan localmente en `uploads/`
