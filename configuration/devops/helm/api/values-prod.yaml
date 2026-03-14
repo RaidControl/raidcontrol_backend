@@ -3,15 +3,16 @@ generic-app:
     deployEnv: prod
 
     hpa:
-        minReplicas: 2
+        minReplicas: 1
+        maxReplicas: 1
 
     app:
         resources:
             requests:
-                cpu: 100m
-                memory: 256M
-            limits:
+                cpu: 500m
                 memory: 1024M
+            limits:
+                memory: 2048M
         env:
             UPLOAD_DIR: "/app/uploads"
             NEEDS_REVIEW_MIN_CONF: "0.30"

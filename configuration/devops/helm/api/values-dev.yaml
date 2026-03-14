@@ -4,12 +4,13 @@ generic-app:
 
     hpa:
         minReplicas: 1
+        maxReplicas: 1
 
     app:
         resources:
             requests:
-                cpu: 50m
-                memory: 128M
+                cpu: 100m
+                memory: 256M
             limits:
                 memory: 512M
         env:
