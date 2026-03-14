@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+from app.config import settings
 
 
 def parse_iso_dt(s: str) -> datetime:
@@ -25,18 +27,28 @@ def _parse_hora_salida(s: str) -> datetime | None:
     return None
 
 
+def _utc_to_local(dt: datetime) -> datetime:
+    """Convert a naive UTC datetime to local time using configured offset."""
+    return dt + timedelta(hours=settings.local_tz_offset_hours)
+
+
 def compute_elapsed_seconds(event_ts: datetime, hora_salida_str: str | None) -> int | None:
-    """Compute elapsed seconds between event timestamp and cyclist start time."""
+    """Compute elapsed seconds between event timestamp and cyclist start time.
+
+    event_ts is stored in UTC (naive). hora_salida is in local time.
+    We convert event_ts to local time before comparing.
+    """
     if not hora_salida_str:
         return None
     start = _parse_hora_salida(hora_salida_str)
     if start is None:
         return None
+    # Convert event_ts from UTC to local time (hora_salida is local)
+    event_naive = event_ts.replace(tzinfo=None) if event_ts.tzinfo else event_ts
+    event_local = _utc_to_local(event_naive)
     # If hora_salida is time-only (HH:MM), combine with event date
     if start.year == 1900:  # strptime default year for time-only formats
-        start = start.replace(year=event_ts.year, month=event_ts.month, day=event_ts.day)
-    # Strip timezone from event_ts for comparison with naive start
-    event_naive = event_ts.replace(tzinfo=None) if event_ts.tzinfo else event_ts
-    diff = event_naive - start
+        start = start.replace(year=event_local.year, month=event_local.month, day=event_local.day)
+    diff = event_local - start
     secs = int(diff.total_seconds())
     return secs if secs >= 0 else None
