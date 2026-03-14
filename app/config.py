@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     needs_review_min_conf: float = 0.30
     finish_checkpoint_id: str = "finish"
 
+    # Timezone
+    local_tz_offset_hours: float = -3  # ART (Argentina) = UTC-3
+
     # DigitalOcean Spaces (S3-compatible)
     spaces_access_key: str = ""
     spaces_secret_key: str = ""
