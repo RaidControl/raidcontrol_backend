@@ -23,6 +23,7 @@ generic-app:
             SPACES_ACCESS_KEY: "DO801BNWAE3LMT8GQ4H6"
             SPACES_BUCKET: "djv-raidcontrol-assets-prod"
             SPACES_REGION: "nyc3"
+            SPACES_CDN_DOMAIN: "djv-raidcontrol-assets-prod.nyc3.cdn.digitaloceanspaces.com"
 
     ingress:
         hosts:
