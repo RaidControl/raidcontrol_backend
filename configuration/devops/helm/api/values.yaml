@@ -1,6 +1,9 @@
 generic-app:
     region: nyc1
 
+    nodeSelector:
+        workload: apps
+
     hpa:
         minReplicas: 1
         maxReplicas: 5
