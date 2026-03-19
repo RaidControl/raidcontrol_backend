@@ -1,0 +1,6 @@
+dependencies:
+- name: generic-app
+  repository: https://moreirodamian.github.io/helm-charts/
+  version: 2.1.7
+digest: sha256:2254280f8e45986b8c527ec28b47a2cc299c8eddf6a12d4c038733408fbdcd80
+generated: "2026-03-18T22:18:20.168683-03:00"
